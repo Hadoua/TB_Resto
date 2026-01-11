@@ -10,7 +10,7 @@ st.set_page_config(layout="centered", page_title="Dashboard Restaurants") # wide
 # https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/iframe
 st.markdown("""
 <style>
-    .stCheckbox { padding-top: 25px; }
+    .stCheckbox { padding-top: 20px; }
     iframe { width: 100%; border: 1px solid #e0e0e0; }
     .stDeployButton {display:none;}
 </style>
@@ -67,7 +67,7 @@ def get_folium_color(cuisine):
     return 'lightgray'
 
 # Config des colonnes de filtres 
-col_quartier, col_cuisine, col_vegan, col_vege = st.columns([3.5, 3, 1.1, 1.6]) # st.columns(4)
+col_quartier, col_cuisine, col_vegan, col_vege = st.columns([3.3, 2.8, 1.2, 1.8]) # st.columns(4)
 
 with col_quartier:
     if 'quartier' in df.columns:
@@ -111,13 +111,14 @@ if has_vege:
         df_filtered = df_filtered[df_filtered[cols_vege[0]].astype(str).str.lower().isin(['yes', 'only'])]
 
 container_map = st.container()
-st.divider() # ligne de séparation 
+#st.divider() # ligne de séparation 
 container_table = st.container()
 
 
 # --- Table ---
 with container_table:
-    st.subheader("Détails des résultats")
+    #st.subheader("Détails des résultats")
+    st.markdown("<h5 style='margin-top: -10px; margin-bottom: 5px;'>Détails des résultats</h5>", unsafe_allow_html=True)
     selected_rows = [] 
 
     if not df_filtered.empty:
@@ -125,16 +126,20 @@ with container_table:
         df_display['lat'] = df_filtered.geometry.y
         df_display['lon'] = df_filtered.geometry.x
         
+        df_display['horaires'] = df_display['horaires'].astype(str).apply(
+            lambda x: x.replace(',', '\n') if x != 'nan' else ''
+        )
+        
         cols_to_show = ['name', 'cuisine', 'phone', 'horaires', 'quartier', 'lat', 'lon']
         
         gb = GridOptionsBuilder.from_dataframe(df_display[cols_to_show])
-        gb.configure_pagination(paginationAutoPageSize=False, paginationPageSize=5)
+        gb.configure_pagination(paginationAutoPageSize=False, paginationPageSize=3)
         gb.configure_selection('single', use_checkbox=True)
         gb.configure_column("lat", hide=True)
         gb.configure_column("lon", hide=True)
         gb.configure_column("name", header_name="Restaurant", width=55)
         gb.configure_column("phone", header_name="Téléphone", width=45)
-        gb.configure_column("cuisine", header_name="Cuisine", width=45)
+        gb.configure_column("cuisine", header_name="Cuisine", width=40)
         gb.configure_column("horaires", header_name="Horaires", width=95,  wrapText=True, autoHeight=True)
         gb.configure_column("quartier", header_name="Quartier", width=60)
         
@@ -145,7 +150,7 @@ with container_table:
             gridOptions=gridOptions,
             update_mode=GridUpdateMode.SELECTION_CHANGED,
             fit_columns_on_grid_load=False,
-            height=250,
+            height=200,
             theme='streamlit',
             key='grid_restos',
             reload_data=False
@@ -161,9 +166,11 @@ with container_table:
 
 # --- CARTE ---
 with container_map:
-    st.subheader(f"Carte intéractive ({len(df_filtered)} restaurants sélectionnés)")
-
-    zoom_level = 13
+    #st.subheader(f"Carte intéractive ({len(df_filtered)} restaurants sélectionnés)")
+    titre_carte = f"Carte interactive ({len(df_filtered)} restaurants sélectionnés)"
+    st.markdown(f"<h5 style='margin-bottom: 5px;'>{titre_carte}</h5>", unsafe_allow_html=True)
+    
+    zoom_level = 12
     selected_name = None
 
     if len(selected_rows) > 0:
@@ -197,7 +204,7 @@ with container_map:
 
         # --- Config POPUP ---
         html_content = f"""
-        <div style="font-family: Arial; width: 250px;">
+        <div style="font-family: Arial; width: 300px;">
             <h3 style="color: {text_color}; margin: 0 0 5px 0;">{name}</h3>
             <div style="font-size: 11px; color: #888; margin-bottom: 5px;">{quartier_display}</div>
             <span style="background-color: {color_hex}; color: white; padding: 3px 10px; border-radius: 12px; font-size: 11px; font-weight: bold;">
@@ -212,7 +219,9 @@ with container_map:
         
         # Merge every thing togther (couche par couche)
         if is_valid(hours):
-            html_content += f"🕒 {hours}<br>"
+            formatted_hours = str(hours).replace(',', '<br>')
+            #formatted_hours = str(hours).replace(',', ',<br><span style="padding-left: 20px;"></span>')
+            html_content += f"🕒 {formatted_hours}<br>"
             
         if is_valid(phone):
             html_content += f"📞 {phone}<br>"
@@ -231,10 +240,11 @@ with container_map:
 
         marker = folium.Marker(
             location=[row.geometry.y, row.geometry.x],
-            popup=folium.Popup(html_content, max_width=200),
+            popup=folium.Popup(html_content, max_width=300),
             tooltip=None,
             icon=folium.Icon(color=icon_color, icon="cutlery", prefix='fa')
         )
+        
         marker.add_to(m)
 
         if is_selected:
@@ -249,4 +259,4 @@ with container_map:
             """)
             m.get_root().html.add_child(script)
 
-    st_data = st_folium(m, width="100%", height=500, returned_objects=[])
+    st_data = st_folium(m, width="100%", height=400, returned_objects=[])
