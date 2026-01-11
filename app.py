@@ -126,10 +126,6 @@ with container_table:
         df_display['lat'] = df_filtered.geometry.y
         df_display['lon'] = df_filtered.geometry.x
         
-        df_display['horaires'] = df_display['horaires'].astype(str).apply(
-            lambda x: x.replace(',', '\n') if x != 'nan' else ''
-        )
-        
         cols_to_show = ['name', 'cuisine', 'phone', 'horaires', 'quartier', 'lat', 'lon']
         
         gb = GridOptionsBuilder.from_dataframe(df_display[cols_to_show])
