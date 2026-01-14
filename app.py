@@ -8,13 +8,22 @@ from st_aggrid import AgGrid, GridOptionsBuilder, GridUpdateMode
 st.set_page_config(layout="centered", page_title="Dashboard Restaurants") # wide
 
 # https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/iframe
+
 st.markdown("""
 <style>
+    /* réduire l'espace vide en haut de la page */
+    .block-container {
+        padding-top: 1rem;
+        padding-bottom: 0rem;
+    }
+
     .stCheckbox { padding-top: 20px; }
     iframe { width: 100%; border: 1px solid #e0e0e0; }
     .stDeployButton {display:none;}
 </style>
-""", unsafe_allow_html=True) # pour pouvoir utiliser du html
+""", unsafe_allow_html=True)
+
+
 
 # --- CACHE DES DONNÉES ---
 @st.cache_data
