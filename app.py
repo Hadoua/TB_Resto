@@ -5,7 +5,7 @@ import folium
 from streamlit_folium import st_folium
 from st_aggrid import AgGrid, GridOptionsBuilder, GridUpdateMode
 
-st.set_page_config(layout="centered", page_title="Dashboard Restaurants") # wide
+st.set_page_config(layout="wide", page_title="Dashboard Restaurants") # wide
 
 # https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/iframe
 
